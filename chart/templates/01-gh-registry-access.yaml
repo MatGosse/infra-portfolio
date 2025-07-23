@@ -1,0 +1,9 @@
+kind: Secret
+type: kubernetes.io/dockerconfigjson
+apiVersion: v1
+metadata:
+  name: gh-registry
+  namespace: {{ .Values.namespace }}
+data:
+  # base64 of 01-registry-config.json
+  .dockerconfigjson: ICB7CiAgICAiYXV0aHMiOiB7CiAgICAgICJnaGNyLmlvIjogewogICAgICAgICJ1c2VybmFtZSI6ICJtZ29zc2UiLAogICAgICAgICJwYXNzd29yZCI6ICJnaHBfNHZvanVNaElZbGl3OTBMU3pvVHNrTGMwbmJ3MVU2MldUa0tNIiwKICAgICAgICAiYXV0aCI6ICJiV2R2YzNObE9tZG9jRjgwZG05cWRVMW9TVmxzYVhjNU1FeFRlbTlVYzJ0TVl6QnVZbmN4VlRZeVYxUnJTMDA9IgogICAgICB9CiAgICB9CiAgfQ==

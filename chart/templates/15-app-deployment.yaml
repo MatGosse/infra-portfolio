@@ -1,0 +1,108 @@
+###############################################################################
+# Frontoffice pod
+###############################################################################
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Values.instance_name }}-frontoffice
+  labels:
+    app: {{ .Values.instance_name }}-frontoffice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.instance_name }}-frontoffice
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.instance_name }}-frontoffice
+    spec:
+      imagePullSecrets:
+        - name: gh-registry
+      containers:
+        # Frontoffice container
+        - name: {{ .Values.instance_name }}-frontoffice
+          image: ghcr.io/matgosse/frontend-portfolio:main
+          imagePullPolicy: Always
+          ports:
+            - name: web
+              containerPort: 80
+      # Volumes mappings are pod wise and mounted in containers
+---
+###############################################################################
+# API and maildev share a POD
+###############################################################################
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Values.instance_name }}-api
+  labels:
+    app: {{ .Values.instance_name }}-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.instance_name }}-api
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.instance_name }}-api
+    spec:
+      imagePullSecrets:
+        - name: gh-registry
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: [ "sh", "-c", "chmod 777 /src/uploads && chmod 777 /data/logs" ]
+          volumeMounts:
+            - name: {{ .Values.instance_name }}-api-uploads
+              mountPath: /data/uploads
+      containers:
+        #######################################################################
+        # API container
+        #######################################################################
+        - name: api
+          image: ghcr.io/matgosse/api-portfolio:main
+          imagePullPolicy: Always
+          ports:
+            - name: web
+              containerPort: 3000
+          env:
+            - name: SECRETFILE_DB_PASSWORD
+              value: '/secrets/database_password'
+            - name: DB_HOST
+              value: {{ .Values.instance_name }}-postgres
+            - name: DATABASE_PORT
+              value: '5432'
+            - name: DB_NAME
+              value: {{ .Values.instance_name }}
+          volumeMounts:
+            - mountPath: /var/www/html/public/uploads
+              name: {{ .Values.instance_name }}-api-uploads
+            #- mountPath: /var/www/html/private
+            #  name: api-private
+            # Use a projected volume to mount multiple secrets in a single folder
+            # /forlabs/secrets is reserved for kubernetes, so use another, custom, dir
+            - mountPath: /secrets
+              name: api-secrets
+      # Volumes mappings are pod wise and mounted in containers
+      volumes:
+        - name: {{ .Values.instance_name }}-api-uploads
+          persistentVolumeClaim:
+            claimName: {{ .Values.instance_name }}-api-uploads
+
+        - name: {{ .Values.instance_name }}-db-creds
+          secret:
+            secretName: {{ .Values.instance_name }}-db-creds
+        # App secret and db creds projections for api mount
+        - name: api-secrets
+          projected:
+            sources:
+              - secret:
+                  name: {{ .Values.instance_name }}-app-secret
+              - secret:
+                  name: {{ .Values.instance_name }}-db-creds
+
+

@@ -1,0 +1,11 @@
+# Default values for my portfolio.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# The following values produce an instance hosted at dev.mg-digital.fr
+
+namespace: portfolio
+# Instance name should ideally follow branch name for easier gh integration
+# In that case, just call a reload an instance with the same name as the branch (ie: develop)
+instance_name: prod
+base_url: mg-digital.fr

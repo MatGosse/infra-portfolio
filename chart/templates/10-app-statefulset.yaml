@@ -1,0 +1,66 @@
+#######################################################################
+# Postgres
+#######################################################################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Values.instance_name }}-postgres
+  labels:
+    app: {{ .Values.instance_name }}-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.instance_name }}-postgres
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.instance_name }}-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgis/postgis:13-3.2
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.instance_name }}
+            - name: POSTGRES_PASSWORD_FILE
+              value: /forlabs/secrets/database_password
+            - name: POSTGRES_USER_FILE
+              value: /forlabs/secrets/database_username
+          ports:
+            - name: postgres
+              containerPort: 5432
+          volumeMounts:
+            - mountPath: /secrets
+              name: {{ .Values.instance_name }}-db-creds
+            - mountPath: /var/lib/postgresql/data/
+              name: {{ .Values.instance_name }}-postgres-data
+          lifecycle:
+            preStop:
+              exec:
+                command: [ "/bin/sh", "-c", "pg_ctl -D /var/lib/postgresql/data -w -t 60 -m fast stop" ]
+      volumes:
+        - name: {{ .Values.instance_name }}-postgres-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.instance_name }}-postgres-data
+        - name: {{ .Values.instance_name }}-db-creds
+          secret:
+            secretName: {{ .Values.instance_name }}-db-creds
+
+#######################################################################
+# bdd service
+#######################################################################
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.instance_name }}-postgres
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+    - protocol: TCP
+      name: postgres
+      port: 5432
+  selector:
+    app: {{ .Values.instance_name }}-postgres
