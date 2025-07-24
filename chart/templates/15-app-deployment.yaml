@@ -55,10 +55,9 @@ spec:
       initContainers:
         - name: init-permissions
           image: busybox
-          command: [ "sh", "-c", "chmod 777 /src/uploads && chmod 777 /data/logs" ]
           volumeMounts:
             - name: {{ .Values.instance_name }}-api-uploads
-              mountPath: /data/uploads
+              mountPath: /src/uploads
       containers:
         #######################################################################
         # API container
@@ -70,6 +69,8 @@ spec:
             - name: web
               containerPort: 3000
           env:
+            - name: SECRETFILE_DB_USERNAME
+              value: '/secrets/database_username'
             - name: SECRETFILE_DB_PASSWORD
               value: '/secrets/database_password'
             - name: DB_HOST
@@ -78,6 +79,8 @@ spec:
               value: '5432'
             - name: DB_NAME
               value: {{ .Values.instance_name }}
+            - name: JWT_FILE
+              value: /secrets/jwt
           volumeMounts:
             - mountPath: /var/www/html/public/uploads
               name: {{ .Values.instance_name }}-api-uploads
