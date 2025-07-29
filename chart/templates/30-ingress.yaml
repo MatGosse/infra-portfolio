@@ -6,28 +6,24 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   entryPoints:
-  - "websecure"
-  - "web"
+    - web
+    - websecure
   routes:
-  ############################################
-  # frontend
-  ############################################
-  - kind: "Rule"
-    entryPoints:
-      - websecure
-    match: Host(`{{ .Values.base_url }}`)
-    services:
-      - name: {{ .Values.instance_name }}-frontoffice
-        port: 80
-  ############################################
-  # API
-  ############################################
-  - kind: "Rule"
-    match: Host(`api.{{ .Values.base_url }}`)
-    entryPoints:
-      - websecure
-    services:
-      - name: {{ .Values.instance_name }}-api
-        port: 3000
+    ############################################
+    # frontend
+    ############################################
+    - kind: "Rule"
+      match: Host(`{{ .Values.base_url }}`)
+      services:
+        - name: {{ .Values.instance_name }}-frontoffice
+          port: 80
+    ############################################
+    # API
+    ############################################
+    - kind: "Rule"
+      match: Host(`api.{{ .Values.base_url }}`)
+      services:
+        - name: {{ .Values.instance_name }}-api
+          port: 3000
   tls:
-    certResolver: "letsencrypt"
+    certResolver: letsencrypt

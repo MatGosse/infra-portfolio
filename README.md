@@ -1,6 +1,8 @@
   Stack portfolio
 ===========================
 
+
+
 Instances du projet portfolio.
 
 Cette stack est déployée sur le cluster k8s ovh.
@@ -15,6 +17,14 @@ Je ne reviens pas ici sur l'installation des prérequis
 
 ## Préparer les fichiers pour une instance
 
+## Présrequis installer
+* installer la stack traefik
+* installer les dependances lier a la generation des secrets
+```bash
+  helm repo add mittwald https://helm.mittwald.de &&
+  helm repo update &&
+  helm upgrade --install kubernetes-secret-generator mittwald/kubernetes-secret-generator
+```
 
 S'inspirer du fichier `chart/values.yaml` pour créer le fichier spécifique de l'instance et l'éditer pour adapter les valeurs.
 
