@@ -82,7 +82,7 @@ spec:
             - name: JWT_FILE
               value: /secrets/jwt
           volumeMounts:
-            - mountPath: /var/www/html/public/uploads
+            - mountPath: /var/www/html/public/dist/uploads
               name: {{ .Values.instance_name }}-api-uploads
             #- mountPath: /var/www/html/private
             #  name: api-private
