@@ -57,7 +57,7 @@ spec:
           image: busybox
           volumeMounts:
             - name: {{ .Values.instance_name }}-api-uploads
-              mountPath: /src/uploads
+              mountPath: /app/uploads
       containers:
         #######################################################################
         # API container
@@ -82,12 +82,8 @@ spec:
             - name: JWT_FILE
               value: /secrets/jwt
           volumeMounts:
-            - mountPath: /var/www/html/public/dist/uploads
+            - mountPath: /app/uploads
               name: {{ .Values.instance_name }}-api-uploads
-            #- mountPath: /var/www/html/private
-            #  name: api-private
-            # Use a projected volume to mount multiple secrets in a single folder
-            # /forlabs/secrets is reserved for kubernetes, so use another, custom, dir
             - mountPath: /secrets
               name: api-secrets
       # Volumes mappings are pod wise and mounted in containers
